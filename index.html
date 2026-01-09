@@ -5,53 +5,91 @@
   <title>じゃんけん</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 60px;
-      background: #111;
-      color: #eee;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 40px;
     }
     button {
-      font-size: 20px;
-      margin: 10px;
+      font-size: 24px;
       padding: 10px 20px;
+      margin: 10px;
       cursor: pointer;
     }
-    #result {
-      margin-top: 30px;
-      font-size: 24px;
+    #status {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #222;
+      color: #fff;
+      padding: 10px;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <h1>じゃんけん</h1>
-  <p>手を選んでください</p>
+<h1>じゃんけん</h1>
 
-  <button onclick="play('グー')">✊ グー</button>
-  <button onclick="play('チョキ')">✌ チョキ</button>
-  <button onclick="play('パー')">✋ パー</button>
+<button onclick="play('rock')">✊</button>
+<button onclick="play('scissors')">✌️</button>
+<button onclick="play('paper')">✋</button>
 
-  <div id="result"></div>
+<div id="result"></div>
 
-  <script>
-    function play(player) {
-      const hands = ['グー','チョキ','パー'];
-      const cpu = hands[Math.floor(Math.random()*3)];
-      let result = '';
+<div id="status"></div>
 
-      if (player === cpu) result = 'あいこ';
-      else if (
-        (player === 'グー' && cpu === 'チョキ') ||
-        (player === 'チョキ' && cpu === 'パー') ||
-        (player === 'パー' && cpu === 'グー')
-      ) result = 'あなたの勝ち';
-      else result = 'あなたの負け';
+<script>
+let round = 1;
+let population = 8000000000;
 
-      document.getElementById('result').innerHTML =
-        `あなた：${player}<br>相手：${cpu}<br><strong>${result}</strong>`;
+function updateStatus() {
+  const probability = (1 / Math.pow(2, round - 1)) * 100;
+  document.getElementById("status").innerText =
+    `第${round}回戦 ｜ 参加人数 ${population.toLocaleString()}人 ｜ 負け上がり確率 ${probability.toFixed(6)}%`;
+}
+
+function play(player) {
+  const hands = ["rock", "scissors", "paper"];
+  const cpu = hands[Math.floor(Math.random() * 3)];
+
+  if (
+    (player === "rock" && cpu === "paper") ||
+    (player === "scissors" && cpu === "rock") ||
+    (player === "paper" && cpu === "scissors")
+  ) {
+    // 負け → 次のラウンドへ
+    round++;
+    population = Math.floor(population / 2);
+
+    if (round > 33) {
+      document.body.innerHTML = `
+        <div style="
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          height:100vh;
+          font-size:32px;
+          font-weight:bold;
+          background:black;
+          color:white;
+        ">
+          you are 1 / 8,000,000,000
+        </div>
+      `;
+      return;
     }
-  </script>
+  }
+
+  updateStatus();
+}
+
+updateStatus();
+</script>
 
 </body>
 </html>
