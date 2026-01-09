@@ -2,52 +2,48 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>第２回ジャンケン大会</title>
+<title>第１回ジャンケン大会</title>
 <style>
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #000;
-  color: #fff;
-  font-family: system-ui, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 40px;
-}
-
-h1 { font-size: 40px; margin-bottom: 24px; }
-
-.buttons { margin-bottom: 32px; }
-
-button {
-  font-size: 28px;
-  padding: 14px 28px;
-  margin: 10px;
-  background: #111;
-  color: #fff;
-  border: 1px solid #444;
-  cursor: pointer;
-}
-
-#result {
-  font-size: 28px;
-  margin-bottom: 24px;
-  white-space: pre-line;
-}
-
-#status {
-  font-size: 40px;
-  text-align: center;
-  white-space: pre-line;
-}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:#000;
+    color:#fff;
+    font-family:system-ui, sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:40px;
+  }
+  h1{font-size:40px;margin:0 0 24px;}
+  .buttons{margin-bottom:28px;}
+  button{
+    font-size:28px;
+    padding:14px 28px;
+    margin:10px;
+    background:#111;
+    color:#fff;
+    border:1px solid #444;
+    cursor:pointer;
+  }
+  button:hover{background:#222;}
+  #result{
+    font-size:28px;
+    margin-bottom:20px;
+    white-space:pre-line;
+    text-align:center;
+  }
+  #status{
+    font-size:40px;
+    text-align:center;
+    white-space:pre-line;
+  }
 </style>
 </head>
 
 <body>
-<h1>第２回ジャンケン大会</h1>
+<h1>第１回ジャンケン大会</h1>
 
-</a>
 <div class="buttons">
   <button onclick="play('グー')">✊ グー</button>
   <button onclick="play('チョキ')">✌️ チョキ</button>
@@ -61,88 +57,99 @@ button {
 const START_POP = 8000000000;
 let round = 1;
 
-function population(r) {
+function population(r){
   return Math.floor(START_POP / Math.pow(2, r - 1));
 }
 
-function probability(r) {
+function probability(r){
   return (100 / Math.pow(2, r - 1)).toFixed(6);
 }
 
-function updateStatus() {
+function updateStatus(){
   document.getElementById("status").innerText =
 `第${round}回戦
 参加人数：${population(round).toLocaleString()}人
 負け上がり確率：${probability(round)}%`;
 }
 
-function restart() {
+function restart(){
   location.reload();
 }
 
-function endScreen(clear) {
+// clear=true  → 33回戦で負けきった（クリア）
+// clear=false → 途中で勝って終了
+function endScreen(clear, endedRound){
+  const prob = probability(endedRound);
+
   document.body.innerHTML = `
     <div style="
-      width:100vw;
-      height:100vh;
+      width:100vw;height:100vh;
       background:${clear ? '#fff' : '#000'};
       color:${clear ? '#000' : '#fff'};
       display:flex;
       flex-direction:column;
       justify-content:center;
       align-items:center;
-      font-size:40px;
       text-align:center;
+      padding:24px;
+      gap:18px;
     ">
-      <div>
+      <div style="font-size:40px;">
         ${clear ? 'you are 1/8,000,000,000' : 'you are not 1/8,000,000,000'}
       </div>
+
+      <div style="font-size:22px; line-height:1.6;">
+        reached: Round ${endedRound}<br>
+        lose-up probability: ${prob}%
+      </div>
+
       <button onclick="restart()" style="
-        margin-top:40px;
+        margin-top:12px;
         font-size:24px;
         padding:12px 24px;
         background:${clear ? '#000' : '#111'};
-        color:${clear ? '#fff' : '#fff'};
+        color:#fff;
         border:1px solid #666;
-      ">
-        ゲームをやり直す
-      </button>
+        cursor:pointer;
+      ">ゲームをやり直す</button>
     </div>
   `;
 }
 
-function play(player) {
+function play(player){
   const hands = ['グー','チョキ','パー'];
   const cpu = hands[Math.floor(Math.random()*3)];
-
   let text = `あなた：${player}\n相手：${cpu}\n`;
 
-  if (player === cpu) {
+  if(player === cpu){
     text += '結果：あいこ';
     document.getElementById("result").innerText = text;
     return;
   }
 
+  // プレイヤーが負けたら次ラウンド（負け上がり）
   const lose =
     (player === 'グー' && cpu === 'パー') ||
     (player === 'チョキ' && cpu === 'グー') ||
     (player === 'パー' && cpu === 'チョキ');
 
-  if (lose) {
+  if(lose){
     round++;
     text += '結果：負け → 次の回戦へ';
     document.getElementById("result").innerText = text;
 
-    if (round === 34) {
-      setTimeout(() => endScreen(true), 600);
+    // 33回戦目で負けた＝roundが34になった瞬間にクリア扱い
+    if(round === 34){
+      setTimeout(() => endScreen(true, 33), 600);
       return;
     }
 
     updateStatus();
   } else {
+    // 途中で勝った＝終了（到達回戦と確率を併記）
     text += '結果：勝ち → 終了';
     document.getElementById("result").innerText = text;
-    setTimeout(() => endScreen(false), 600);
+    setTimeout(() => endScreen(false, round), 600);
   }
 }
 
