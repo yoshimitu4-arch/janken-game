@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>じゃんけん</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 60px;
+      background: #111;
+      color: #eee;
+    }
+    button {
+      font-size: 20px;
+      margin: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>じゃんけん</h1>
+  <p>手を選んでください</p>
+
+  <button onclick="play('グー')">✊ グー</button>
+  <button onclick="play('チョキ')">✌ チョキ</button>
+  <button onclick="play('パー')">✋ パー</button>
+
+  <div id="result"></div>
+
+  <script>
+    function play(player) {
+      const hands = ['グー','チョキ','パー'];
+      const cpu = hands[Math.floor(Math.random()*3)];
+      let result = '';
+
+      if (player === cpu) result = 'あいこ';
+      else if (
+        (player === 'グー' && cpu === 'チョキ') ||
+        (player === 'チョキ' && cpu === 'パー') ||
+        (player === 'パー' && cpu === 'グー')
+      ) result = 'あなたの勝ち';
+      else result = 'あなたの負け';
+
+      document.getElementById('result').innerHTML =
+        `あなた：${player}<br>相手：${cpu}<br><strong>${result}</strong>`;
+    }
+  </script>
+
+</body>
+</html>
