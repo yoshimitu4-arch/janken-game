@@ -1,94 +1,145 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>負け上がりジャンケン</title>
-<style>
-  body {
-    font-family: sans-serif;
-    text-align: center;
-    background: #111;
-    color: #eee;
-    padding-top: 40px;
-  }
-  button {
-    font-size: 20px;
-    margin: 10px;
-    padding: 10px 20px;
-  }
-  #info {
-    margin-top: 30px;
-    font-size: 18px;
-    line-height: 1.6;
-  }
-  #result {
-    margin-top: 20px;
-    font-size: 22px;
-  }
-</style>
-</head>
+  <meta charset="UTF-8">
+  <title>負け上がりジャンケン</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 40px;
+    }
 
+    h1 {
+      font-size: 40px;
+      margin-bottom: 24px;
+      letter-spacing: 0.1em;
+    }
+
+    .buttons {
+      margin-bottom: 32px;
+    }
+
+    button {
+      font-size: 28px;
+      padding: 14px 28px;
+      margin: 0 10px;
+      background: #111;
+      color: #fff;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #222;
+    }
+
+    #result {
+      font-size: 28px;
+      margin-bottom: 24px;
+      white-space: pre-line;
+    }
+
+    #status {
+      font-size: 40px; /* ← じゃんけんと同格 */
+      line-height: 1.4;
+      text-align: center;
+      white-space: pre-line;
+    }
+  </style>
+</head>
 <body>
 
 <h1>負け上がりジャンケン</h1>
 
-<div>
-  <button onclick="play('グー')">グー</button>
-  <button onclick="play('チョキ')">チョキ</button>
-  <button onclick="play('パー')">パー</button>
+<div class="buttons">
+  <button onclick="play('グー')">✊ グー</button>
+  <button onclick="play('チョキ')">✌️ チョキ</button>
+  <button onclick="play('パー')">✋ パー</button>
 </div>
 
 <div id="result"></div>
-
-<div id="info"></div>
+<div id="status"></div>
 
 <script>
-let round = 1;
-const maxRound = 33;
-const startPopulation = 8000000000;
+  const START_POP = 8000000000;
+  let round = 1;
 
-function updateInfo() {
-  const population = Math.floor(startPopulation / Math.pow(2, round - 1));
-  const probability = round === 1 ? 100 : (100 / Math.pow(2, round - 1));
-  document.getElementById("info").innerText =
-    `第${round}回戦\n` +
-    `参加人数：${population.toLocaleString()}人\n` +
-    `負け上がり確率：${probability}%\n\n` +
-    `you are 1 / ${startPopulation.toLocaleString()}`;
-}
-
-function play(player) {
-  if (round > maxRound) return;
-
-  const hands = ['グー','チョキ','パー'];
-  const cpu = hands[Math.floor(Math.random()*3)];
-
-  let outcome = "";
-  if (
-    (player === 'グー' && cpu === 'チョキ') ||
-    (player === 'チョキ' && cpu === 'パー') ||
-    (player === 'パー' && cpu === 'グー')
-  ) {
-    outcome = "勝ち（脱落）";
-  } else if (player === cpu) {
-    outcome = "あいこ（再戦）";
-  } else {
-    outcome = "負け（次の回戦へ）";
-    round++;
+  function population(r) {
+    return Math.floor(START_POP / Math.pow(2, r - 1));
   }
 
-  document.getElementById("result").innerText =
-    `あなた：${player} ／ 相手：${cpu}\n${outcome}`;
-
-  if (round > maxRound) {
-    document.getElementById("info").innerText =
-      "第33回戦終了\n\nyou are 1 / 8,000,000,000";
-  } else {
-    updateInfo();
+  function probability(r) {
+    return (100 / Math.pow(2, r - 1)).toFixed(6);
   }
-}
 
-updateInfo();
+  function updateStatus() {
+    document.getElementById("status").innerText =
+      `第${round}回戦
+参加人数：${population(round).toLocaleString()}人
+負け上がり確率：${probability(round)}%`;
+  }
+
+  function endScreen() {
+    document.body.innerHTML = `
+      <div style="
+        width:100vw;
+        height:100vh;
+        background:#000;
+        color:#fff;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:40px;
+        letter-spacing:0.05em;
+      ">
+        you are 1 / 8,000,000,000
+      </div>
+    `;
+  }
+
+  function play(player) {
+    if (round > 33) return;
+
+    const hands = ['グー', 'チョキ', 'パー'];
+    const cpu = hands[Math.floor(Math.random() * 3)];
+
+    let text = `あなた：${player}\n相手：${cpu}\n`;
+
+    if (player === cpu) {
+      text += `結果：あいこ（回戦は進まない）`;
+    } else if (
+      (player === 'グー' && cpu === 'パー') ||
+      (player === 'チョキ' && cpu === 'グー') ||
+      (player === 'パー' && cpu === 'チョキ')
+    ) {
+      text += `結果：負け → 次の回戦へ`;
+      round++;
+    } else {
+      text += `結果：勝ち → 終了`;
+      document.getElementById("result").innerText = text;
+      setTimeout(endScreen, 800);
+      return;
+    }
+
+    document.getElementById("result").innerText = text;
+
+    if (round > 33) {
+      setTimeout(endScreen, 800);
+      return;
+    }
+
+    updateStatus();
+  }
+
+  updateStatus();
 </script>
 
 </body>
