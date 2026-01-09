@@ -1,62 +1,50 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>負け上がりジャンケン</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: #000;
-      color: #fff;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 40px;
-    }
+<meta charset="UTF-8">
+<title>負け上がりジャンケン</title>
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+}
 
-    h1 {
-      font-size: 40px;
-      margin-bottom: 24px;
-      letter-spacing: 0.1em;
-    }
+h1 { font-size: 40px; margin-bottom: 24px; }
 
-    .buttons {
-      margin-bottom: 32px;
-    }
+.buttons { margin-bottom: 32px; }
 
-    button {
-      font-size: 28px;
-      padding: 14px 28px;
-      margin: 0 10px;
-      background: #111;
-      color: #fff;
-      border: 1px solid #444;
-      cursor: pointer;
-    }
+button {
+  font-size: 28px;
+  padding: 14px 28px;
+  margin: 10px;
+  background: #111;
+  color: #fff;
+  border: 1px solid #444;
+  cursor: pointer;
+}
 
-    button:hover {
-      background: #222;
-    }
+#result {
+  font-size: 28px;
+  margin-bottom: 24px;
+  white-space: pre-line;
+}
 
-    #result {
-      font-size: 28px;
-      margin-bottom: 24px;
-      white-space: pre-line;
-    }
-
-    #status {
-      font-size: 40px; /* ← じゃんけんと同格 */
-      line-height: 1.4;
-      text-align: center;
-      white-space: pre-line;
-    }
-  </style>
+#status {
+  font-size: 40px;
+  text-align: center;
+  white-space: pre-line;
+}
+</style>
 </head>
-<body>
 
+<body>
 <h1>負け上がりジャンケン</h1>
 
 <div class="buttons">
@@ -69,78 +57,95 @@
 <div id="status"></div>
 
 <script>
-  const START_POP = 8000000000;
-  let round = 1;
+const START_POP = 8000000000;
+let round = 1;
 
-  function population(r) {
-    return Math.floor(START_POP / Math.pow(2, r - 1));
-  }
+function population(r) {
+  return Math.floor(START_POP / Math.pow(2, r - 1));
+}
 
-  function probability(r) {
-    return (100 / Math.pow(2, r - 1)).toFixed(6);
-  }
+function probability(r) {
+  return (100 / Math.pow(2, r - 1)).toFixed(6);
+}
 
-  function updateStatus() {
-    document.getElementById("status").innerText =
-      `第${round}回戦
+function updateStatus() {
+  document.getElementById("status").innerText =
+`第${round}回戦
 参加人数：${population(round).toLocaleString()}人
 負け上がり確率：${probability(round)}%`;
-  }
+}
 
-  function endScreen() {
-    document.body.innerHTML = `
-      <div style="
-        width:100vw;
-        height:100vh;
-        background:#000;
-        color:#fff;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        font-size:40px;
-        letter-spacing:0.05em;
-      ">
-        you are 1 / 8,000,000,000
+function restart() {
+  location.reload();
+}
+
+function endScreen(clear) {
+  document.body.innerHTML = `
+    <div style="
+      width:100vw;
+      height:100vh;
+      background:${clear ? '#fff' : '#000'};
+      color:${clear ? '#000' : '#fff'};
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      font-size:40px;
+      text-align:center;
+    ">
+      <div>
+        ${clear ? 'you are 1/8,000,000,000' : 'you are not 1/8,000,000,000'}
       </div>
-    `;
+      <button onclick="restart()" style="
+        margin-top:40px;
+        font-size:24px;
+        padding:12px 24px;
+        background:${clear ? '#000' : '#111'};
+        color:${clear ? '#fff' : '#fff'};
+        border:1px solid #666;
+      ">
+        ゲームをやり直す
+      </button>
+    </div>
+  `;
+}
+
+function play(player) {
+  const hands = ['グー','チョキ','パー'];
+  const cpu = hands[Math.floor(Math.random()*3)];
+
+  let text = `あなた：${player}\n相手：${cpu}\n`;
+
+  if (player === cpu) {
+    text += '結果：あいこ';
+    document.getElementById("result").innerText = text;
+    return;
   }
 
-  function play(player) {
-    if (round > 33) return;
+  const lose =
+    (player === 'グー' && cpu === 'パー') ||
+    (player === 'チョキ' && cpu === 'グー') ||
+    (player === 'パー' && cpu === 'チョキ');
 
-    const hands = ['グー', 'チョキ', 'パー'];
-    const cpu = hands[Math.floor(Math.random() * 3)];
-
-    let text = `あなた：${player}\n相手：${cpu}\n`;
-
-    if (player === cpu) {
-      text += `結果：あいこ（回戦は進まない）`;
-    } else if (
-      (player === 'グー' && cpu === 'パー') ||
-      (player === 'チョキ' && cpu === 'グー') ||
-      (player === 'パー' && cpu === 'チョキ')
-    ) {
-      text += `結果：負け → 次の回戦へ`;
-      round++;
-    } else {
-      text += `結果：勝ち → 終了`;
-      document.getElementById("result").innerText = text;
-      setTimeout(endScreen, 800);
-      return;
-    }
-
+  if (lose) {
+    round++;
+    text += '結果：負け → 次の回戦へ';
     document.getElementById("result").innerText = text;
 
-    if (round > 33) {
-      setTimeout(endScreen, 800);
+    if (round === 34) {
+      setTimeout(() => endScreen(true), 600);
       return;
     }
 
     updateStatus();
+  } else {
+    text += '結果：勝ち → 終了';
+    document.getElementById("result").innerText = text;
+    setTimeout(() => endScreen(false), 600);
   }
+}
 
-  updateStatus();
+updateStatus();
 </script>
-
 </body>
 </html>
