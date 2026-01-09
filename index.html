@@ -1,94 +1,94 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>じゃんけん</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      margin-top: 40px;
-    }
-    button {
-      font-size: 24px;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-    }
-    #status {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #222;
-      color: #fff;
-      padding: 10px;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>負け上がりジャンケン</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    background: #111;
+    color: #eee;
+    padding-top: 40px;
+  }
+  button {
+    font-size: 20px;
+    margin: 10px;
+    padding: 10px 20px;
+  }
+  #info {
+    margin-top: 30px;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 22px;
+  }
+</style>
 </head>
+
 <body>
 
-<h1>じゃんけん</h1>
+<h1>負け上がりジャンケン</h1>
 
-<button onclick="play('rock')">✊</button>
-<button onclick="play('scissors')">✌️</button>
-<button onclick="play('paper')">✋</button>
+<div>
+  <button onclick="play('グー')">グー</button>
+  <button onclick="play('チョキ')">チョキ</button>
+  <button onclick="play('パー')">パー</button>
+</div>
 
 <div id="result"></div>
 
-<div id="status"></div>
+<div id="info"></div>
 
 <script>
 let round = 1;
-let population = 8000000000;
+const maxRound = 33;
+const startPopulation = 8000000000;
 
-function updateStatus() {
-  const probability = (1 / Math.pow(2, round - 1)) * 100;
-  document.getElementById("status").innerText =
-    `第${round}回戦 ｜ 参加人数 ${population.toLocaleString()}人 ｜ 負け上がり確率 ${probability.toFixed(6)}%`;
+function updateInfo() {
+  const population = Math.floor(startPopulation / Math.pow(2, round - 1));
+  const probability = round === 1 ? 100 : (100 / Math.pow(2, round - 1));
+  document.getElementById("info").innerText =
+    `第${round}回戦\n` +
+    `参加人数：${population.toLocaleString()}人\n` +
+    `負け上がり確率：${probability}%\n\n` +
+    `you are 1 / ${startPopulation.toLocaleString()}`;
 }
 
 function play(player) {
-  const hands = ["rock", "scissors", "paper"];
-  const cpu = hands[Math.floor(Math.random() * 3)];
+  if (round > maxRound) return;
 
+  const hands = ['グー','チョキ','パー'];
+  const cpu = hands[Math.floor(Math.random()*3)];
+
+  let outcome = "";
   if (
-    (player === "rock" && cpu === "paper") ||
-    (player === "scissors" && cpu === "rock") ||
-    (player === "paper" && cpu === "scissors")
+    (player === 'グー' && cpu === 'チョキ') ||
+    (player === 'チョキ' && cpu === 'パー') ||
+    (player === 'パー' && cpu === 'グー')
   ) {
-    // 負け → 次のラウンドへ
+    outcome = "勝ち（脱落）";
+  } else if (player === cpu) {
+    outcome = "あいこ（再戦）";
+  } else {
+    outcome = "負け（次の回戦へ）";
     round++;
-    population = Math.floor(population / 2);
-
-    if (round > 33) {
-      document.body.innerHTML = `
-        <div style="
-          display:flex;
-          justify-content:center;
-          align-items:center;
-          height:100vh;
-          font-size:32px;
-          font-weight:bold;
-          background:black;
-          color:white;
-        ">
-          you are 1 / 8,000,000,000
-        </div>
-      `;
-      return;
-    }
   }
 
-  updateStatus();
+  document.getElementById("result").innerText =
+    `あなた：${player} ／ 相手：${cpu}\n${outcome}`;
+
+  if (round > maxRound) {
+    document.getElementById("info").innerText =
+      "第33回戦終了\n\nyou are 1 / 8,000,000,000";
+  } else {
+    updateInfo();
+  }
 }
 
-updateStatus();
+updateInfo();
 </script>
 
 </body>
